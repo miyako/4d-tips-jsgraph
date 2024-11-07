@@ -7,120 +7,36 @@
         <style type="text/css">
             html { height: 100% }
             body { height: 100%; margin: 0; padding: 0;  -webkit-print-color-adjust: exact; }
-            #graph { height: 100% }
+            #graph { height:90%; width: 90%;}
         </style>
     </head>
     <body>
         <div id="graph" />
         <script>
-            function drawGraph(data){
-
-                let c = new Array(data[0].length).fill(0);
-                c = c.map(
-                    (v, index) => {
-                        return {
-                            _rgb: [255 * index / data[0].length, 0, 0]
-                        }
-                    }
-                );
-
-                // Create a waveform, which is used to represent data in a general sense. It has also a few cool tricks
-                const wave1 = Graph.newWaveform().setData(data[1], data[0]);
-
-                // For example, you can duplicate it into a second wave and do some point-to-point mathematics, in this case calculate the power density
-                const wave2 = wave1.duplicate().math((x, y) => x * y);
-
-                // Let's create a new example and place it in the placeholder <div id="graph-example-1" />
-                var g = new Graph("graph", {});
-
-                // You need to set the size if the container doesn't have one already
-                g.resize(400, 300);
-                g.makeLegend({ isSerieSelectable: true });
-                // Let us create a new serie, called "jV", with red thick line and markers
-                var jV = g
-                    .newSerie("jV", {
-                        lineColor: 'red',
-                        lineWidth: 2,
-                        selectableOnClick: true,
-                        markers: false,
-                        selectable: true,
-                        // Setting the style of the markers
-                        markerStyles: {
-                            // For the default "unselected" style
-                            unselected: {
-                                // Default look
-                                default: {
-                                    shape: 'rect',
-                                    strokeWidth: 1,
-                                    x: -2,
-                                    y: -2,
-                                    width: 4,
-                                    height: 4,
-                                    stroke: 'rgb( 200, 0, 0 )',
-                                    fill: 'white'
-                                }
-                            },
-                            // Maybe we want to display only one marker every five points. Nothing easier !
-                            modifiers: (x, y, index, domShape, style) => index % 5 == 0 ? style : false
-                        }
-                    }, 'line.color')
-                    .autoAxis() // Assign it automatically to the left and the bottom axis (which are created by default if they don't exist)
-                    .setWaveform(wave1) // Assign a waveform to this serie
-                jV.setColors(c);
-                // How about a second serie ?
-                var pV = g
-                    .newSerie("pV") // Give it a unique name, otherwise you'll overwrite the first one
-                    .setXAxis(g.getXAxis()) // The x axis is the same...
-                    .setYAxis(g.getRightAxis()) //  But the y axis is different, let's get the first right axis (created by default)
-                    .setWaveform(wave2); // And assign the second waveform
-
-                // How about some styling of the axes ?
-                g
-                    .getXAxis() // Retrieve the bottom axis
-                    .setUnit("V") // Set the unit voltage
-                    .setUnitWrapper("(", ")") // Wrap in parentheses ==> (V)
-                    .setLabel("Voltage") // Show the axis label
-                    .secondaryGridOff(); // Turn off the secondary grid
-
-                g
-                    .getLeftAxis()  // Retrieve the left axis
-                    .setUnit("mA cm^-2")
-                    .setUnitWrapper("(", ")")
-                    .setLabel("Current density")
-                    .secondaryGridOff()
-                    .forceMin(-25) // Force the minimum of the axis
-                    .forceMax(60);  // And its maximum
-
-                g
-                    .getRightAxis()
-                    .setUnit("mW cm^-2")
-                    .setUnitWrapper("(", ")")
-                    .setLabel("Power density")
-                    .gridsOff(); // Do not display any grid for the right axis
-
-                // Adds some spacing to the right of the axis. This is 30% of the "data width" of the axis (which is the max value - the min value for all series sharing this axis)
-                g.getBottomAxis().setAxisDataSpacing(0, 0.3);
-
-                // We want the 0 of the right axis to match the 0 of the left axis. It's much more natural like that
-                // Use .adaptTo() to enforce this behaviour adaptTo( otherAxis, myRef, otherRef, clamp )
-                // The clamp "min" basically says that the normal scaling behaviour applies to the 0 and to the min value of the axis. The max value is therefore the one calculated as a function of the master axis (the left one)
-                g.getRightAxis().adaptTo(g.getLeftAxis(), 0, 0, "min");
-
-                // Some more styling, note how you can change the color of the axis, the ticks, the tick labels and the axis label
-                g
-                    .getLeftAxis()
-                    .setAxisColor('red')
-                    .setPrimaryTicksColor('red')
-                    .setSecondaryTicksColor('rgba( 150, 10, 10, 0.9 )')
-                    .setTicksLabelColor('#880000')
-                    .setLabelColor('red');
-
-                // autoscale has to be called before the first rendering when more than one serie was added
-                g.autoScaleAxes();
-
-                // And finally, let's draw it !
-                g.draw();
+            var g = {}
+            function setup(){
+                g = new Graph( "graph", {}, {} );
+                g.redraw();
             }
+
+        function drawGraph(data, name, lineColor, lineWidth){
+
+            const wave = Graph.newWaveform().setData(data[0], data[1]);
+
+            let options = {
+                lineColor: lineColor,
+                lineWidth: lineWidth,
+                markers: true
+            }
+
+            g
+            .newSerie(name, options)
+            .autoAxis()
+            .setWaveform(wave)
+
+            g.autoScaleAxes();
+            g.draw();
+        }
         </script>
         <script type="text/javascript" src="./jsgraph.min.js"></script>
     </body>
