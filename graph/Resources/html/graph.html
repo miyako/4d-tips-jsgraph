@@ -19,18 +19,26 @@
                 g.redraw();
             }
 
-        function drawGraph(data, name, lineColor, lineWidth){
+        function drawGraph(data, name, lineColor, lineWidth, markerPath, markerColor, markerWidth){
 
             const wave = Graph.newWaveform().setData(data[0], data[1]);
-
-            let options = {
+            
+            const serie = g.newSerie(name, {
                 lineColor: lineColor,
                 lineWidth: lineWidth,
-                markers: true
-            }
-
-            g
-            .newSerie(name, options)
+                markers: true,
+                markerStyles: {
+                    unselected: {
+                        default: {
+                            shape: 'polyline',
+                            points: markerPath,
+                            strokeWidth: markerWidth,
+                            stroke: markerColor,
+                            fill: 'none'
+                        }
+                    }
+                }
+            })
             .autoAxis()
             .setWaveform(wave)
 
